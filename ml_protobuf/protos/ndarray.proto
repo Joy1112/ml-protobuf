@@ -1,0 +1,45 @@
+// Copyright 2023 Joy1112
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+syntax = "proto3";
+
+package ml_protobuf.protos.array;
+
+// Data type
+enum DType {
+    // Basic types
+    FLOAT16 = 0;
+    FLOAT32 = 1;
+    FLOAT64 = 2;
+    INT16 = 3;
+    INT32 = 4;
+    INT64 = 5;
+    UINT8 = 6;
+    UINT16 = 7;
+    UINT32 = 8;
+    UINT64 = 9;
+    BOOL = 10;
+    STRING = 11;
+    // python type object is treated as STRING
+    OBJECT = 12;
+}
+
+message NDArray {
+    repeated int32 shape = 1;
+    DType dtype = 2;
+    bytes data = 3;
+    repeated string string_data = 4;
+    repeated bool none_object = 5;
+}
