@@ -13,13 +13,14 @@
 # limitations under the License.
 
 import numpy as np
+import pickle
 
 from typing import Tuple, Optional
 
 from . import array_pb2
 
 
-def array_to_proto(array: np.ndarray, shape: Optional[Tuple[int]] = None, dtype: Optional[str] = None) -> array_pb2.NDArray:
+def array_to_proto(array: np.ndarray, shape: Optional[Tuple[int]] = None, dtype: Optional[str] = None, dump_tool: str = 'numpy') -> array_pb2.NDArray:
     """
     Serializes a numpy array into a NDArray protobuf message.
 
@@ -66,7 +67,12 @@ def array_to_proto(array: np.ndarray, shape: Optional[Tuple[int]] = None, dtype:
 
     if dtype not in ['string', 'object']:
         # serialize the array data
-        array_proto.data = array.tobytes()
+        if dump_tool == 'numpy':
+            array_proto.data = array.tobytes()
+        elif dump_tool == 'pickle':
+            array_proto.data = pickle.dumps(array.tostring(), protocol=pickle.HIGHEST_PROTOCOL)
+        else:
+            raise ValueError
     else:
         # dtype == 'object' or dtype == 'string' are similar in this projects
         # e.g.: Batch.done - np.array([None, 'bad_transition'], dtype=np.object)
@@ -91,7 +97,7 @@ def array_to_proto(array: np.ndarray, shape: Optional[Tuple[int]] = None, dtype:
     return array_proto
 
 
-def proto_to_array(array_proto: array_pb2.NDArray) -> np.ndarray:
+def proto_to_array(array_proto: array_pb2.NDArray, load_tool: str = 'numpy') -> np.ndarray:
     """
     Retrieve the np.ndarray from the NDArray Proto data.
 
@@ -110,7 +116,12 @@ def proto_to_array(array_proto: array_pb2.NDArray) -> np.ndarray:
     dtype = dtype_reversed_dict[int(array_proto.dtype)]
 
     if dtype not in ['string', 'object']:
-        array = np.frombuffer(array_proto.data, dtype=np.dtype(dtype)).reshape(shape)
+        if load_tool == 'numpy':
+            array = np.frombuffer(array_proto.data, dtype=np.dtype(dtype)).reshape(shape)
+        elif load_tool == 'pickle':
+            array = np.frombuffer(pickle.loads(array_proto.data), dtype=np.dtype(dtype)).reshape(shape)
+        else:
+            raise ValueError
     else:
         # the string will be decoded as utf-8.
         array = np.array(array_proto.string_data, dtype=object)
